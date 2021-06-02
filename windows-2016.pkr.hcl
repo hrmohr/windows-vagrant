@@ -100,10 +100,9 @@ source "virtualbox-iso" "windows-2016-amd64" {
   headless                  = true
   iso_url                   = var.iso_url
   iso_checksum              = var.iso_checksum
-  iso_interface             = "sata"
+  iso_interface             = "ide"
   shutdown_command          = "shutdown /s /t 0 /f /d p:4:1 /c \"Packer Shutdown\""
   vboxmanage = [
-    ["storagectl", "{{ .Name }}", "--name", "IDE Controller", "--remove"],
     ["modifyvm", "{{ .Name }}", "--vrde", "off"],
     ["modifyvm", "{{ .Name }}", "--graphicscontroller", "vboxsvga"],
     ["modifyvm", "{{ .Name }}", "--vram", "128"],
@@ -115,6 +114,7 @@ source "virtualbox-iso" "windows-2016-amd64" {
     ["modifyvm", "{{ .Name }}", "--nictype2", "82540EM"],
     ["modifyvm", "{{ .Name }}", "--nictype3", "82540EM"],
     ["modifyvm", "{{ .Name }}", "--nictype4", "82540EM"],
+    ["modifyvm", "{{ .Name }}", "--nested-hw-virt", "on"],
   ]
   communicator = "ssh"
   ssh_username = "vagrant"
@@ -205,6 +205,21 @@ build {
 
   provisioner "powershell" {
     script = "provision-cloudbase-init.ps1"
+  }
+
+  provisioner "powershell" {
+    script = "ConfigureRemotingForAnsible.ps1"
+  }
+
+  provisioner "powershell" {
+    script = "01-install-docker.ps1"
+  }
+
+  provisioner "windows-restart" {
+  }
+
+  provisioner "powershell" {
+    script = "02-install-docker.ps1"
   }
 
   provisioner "powershell" {
