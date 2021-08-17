@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     windows-update = {
-      version = "0.12.0"
+      version = "0.14.0"
       source = "github.com/rgl/windows-update"
     }
   }
@@ -34,7 +34,8 @@ source "qemu" "windows-2019-uefi-amd64" {
     ["-bios", "/usr/share/ovmf/OVMF.fd"],
     ["-cpu", "host"],
     ["-soundhw", "hda"],
-    ["-usbdevice", "tablet"],
+    ["-device", "piix3-usb-uhci"],
+    ["-device", "usb-tablet"],
     ["-device", "virtio-net,netdev=user.0"],
     ["-vga", "qxl"],
     ["-device", "virtio-serial-pci"],

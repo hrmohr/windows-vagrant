@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     windows-update = {
-      version = "0.12.0"
+      version = "0.14.0"
       source = "github.com/rgl/windows-update"
     }
   }
@@ -14,12 +14,12 @@ variable "disk_size" {
 
 variable "iso_url" {
   type    = string
-  default = "https://software-download.microsoft.com/download/pr/19042.631.201119-0144.20h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso"
+  default = "https://software-download.microsoft.com/download/pr/19042.508.200927-1902.20h2_release_svc_refresh_CLIENTENTERPRISEEVAL_OEMRET_x64FRE_en-us.iso"
 }
 
 variable "iso_checksum" {
   type    = string
-  default = "sha256:32c7b0a51a48cc4f67c250be4fe2b384febb9cc864c5b77a052d4e2845394eac"
+  default = "sha256:574f00380ead9e4b53921c33bf348b5a2fa976ffad1d5fa20466ddf7f0258964"
 }
 
 variable "hyperv_switch_name" {
@@ -43,7 +43,8 @@ source "qemu" "windows-10-20h2-amd64" {
   qemuargs = [
     ["-cpu", "host"],
     ["-soundhw", "hda"],
-    ["-usbdevice", "tablet"],
+    ["-device", "piix3-usb-uhci"],
+    ["-device", "usb-tablet"],
     ["-device", "virtio-net,netdev=user.0"],
     ["-vga", "qxl"],
     ["-device", "virtio-serial-pci"],

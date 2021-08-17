@@ -14,12 +14,12 @@ variable "disk_size" {
 
 variable "iso_url" {
   type    = string
-  default = "https://software-download.microsoft.com/download/sg/17763.107.101029-1455.rs5_release_svc_refresh_CLIENT_LTSC_EVAL_x64FRE_en-us.iso"
+  default = "https://software-download.microsoft.com/download/sg/20348.1.210507-1500.fe_release_SERVER_EVAL_x64FRE_en-us.iso"
 }
 
 variable "iso_checksum" {
   type    = string
-  default = "sha256:668fe1af70c2f7416328aee3a0bb066b12dc6bbd2576f40f812b95741e18bc3a"
+  default = "sha256:2ee3a0325f7230b1ff68bd8db2695f4102eae4ff32118382b1ab2e2b98a71aaa"
 }
 
 variable "hyperv_switch_name" {
@@ -36,7 +36,7 @@ variable "vagrant_box" {
   type = string
 }
 
-source "qemu" "windows-10-1809-amd64" {
+source "qemu" "windows-2022-amd64" {
   accelerator = "kvm"
   cpus        = 2
   memory      = 4096
@@ -57,21 +57,21 @@ source "qemu" "windows-10-1809-amd64" {
   disk_interface = "virtio"
   disk_size      = var.disk_size
   floppy_files = [
-    "windows-10/autounattend.xml",
+    "windows-2022/autounattend.xml",
     "winrm.ps1",
     "provision-openssh.ps1",
-    "drivers/vioserial/w10/amd64/*.cat",
-    "drivers/vioserial/w10/amd64/*.inf",
-    "drivers/vioserial/w10/amd64/*.sys",
-    "drivers/viostor/w10/amd64/*.cat",
-    "drivers/viostor/w10/amd64/*.inf",
-    "drivers/viostor/w10/amd64/*.sys",
-    "drivers/NetKVM/w10/amd64/*.cat",
-    "drivers/NetKVM/w10/amd64/*.inf",
-    "drivers/NetKVM/w10/amd64/*.sys",
-    "drivers/qxldod/w10/amd64/*.cat",
-    "drivers/qxldod/w10/amd64/*.inf",
-    "drivers/qxldod/w10/amd64/*.sys",
+    "drivers/vioserial/2k19/amd64/*.cat",
+    "drivers/vioserial/2k19/amd64/*.inf",
+    "drivers/vioserial/2k19/amd64/*.sys",
+    "drivers/viostor/2k19/amd64/*.cat",
+    "drivers/viostor/2k19/amd64/*.inf",
+    "drivers/viostor/2k19/amd64/*.sys",
+    "drivers/NetKVM/2k19/amd64/*.cat",
+    "drivers/NetKVM/2k19/amd64/*.inf",
+    "drivers/NetKVM/2k19/amd64/*.sys",
+    "drivers/qxldod/2k19/amd64/*.cat",
+    "drivers/qxldod/2k19/amd64/*.inf",
+    "drivers/qxldod/2k19/amd64/*.sys",
   ]
   format           = "qcow2"
   headless         = true
@@ -85,18 +85,18 @@ source "qemu" "windows-10-1809-amd64" {
   ssh_timeout      = "4h"
 }
 
-source "virtualbox-iso" "windows-10-1809-amd64" {
+source "virtualbox-iso" "windows-2022-amd64" {
   cpus      = 2
   memory    = 4096
   disk_size = var.disk_size
   floppy_files = [
-    "windows-10/autounattend.xml",
+    "windows-2022/autounattend.xml",
     "winrm.ps1",
     "provision-openssh.ps1",
   ]
   guest_additions_interface = "sata"
   guest_additions_mode      = "attach"
-  guest_os_type             = "Windows10_64"
+  guest_os_type             = "Windows2019_64"
   hard_drive_interface      = "sata"
   headless                  = true
   iso_url                   = var.iso_url
@@ -123,7 +123,7 @@ source "virtualbox-iso" "windows-10-1809-amd64" {
   ssh_timeout  = "4h"
 }
 
-source "hyperv-iso" "windows-10-1809-amd64" {
+source "hyperv-iso" "windows-2022-amd64" {
   cpus         = 2
   memory       = 4096
   generation   = 2
@@ -131,7 +131,7 @@ source "hyperv-iso" "windows-10-1809-amd64" {
   boot_order   = ["SCSI:0:0"]
   boot_wait    = "1s"
   cd_files = [
-    "windows-10-uefi/autounattend.xml",
+    "windows-2022-uefi/autounattend.xml",
     "winrm.ps1",
     "provision-openssh.ps1",
   ]
@@ -152,9 +152,9 @@ source "hyperv-iso" "windows-10-1809-amd64" {
 
 build {
   sources = [
-    "source.qemu.windows-10-1809-amd64",
-    "source.virtualbox-iso.windows-10-1809-amd64",
-    "source.hyperv-iso.windows-10-1809-amd64",
+    "source.qemu.windows-2022-amd64",
+    "source.virtualbox-iso.windows-2022-amd64",
+    "source.hyperv-iso.windows-2022-amd64",
   ]
 
   provisioner "powershell" {
@@ -162,29 +162,20 @@ build {
   }
 
   provisioner "powershell" {
-    inline = ["<# disable Windows Defender #> Set-MpPreference -DisableRealtimeMonitoring $true; Set-ItemProperty -Path 'HKLM:/SOFTWARE/Policies/Microsoft/Windows Defender' -Name DisableAntiSpyware -Value 1"]
+    inline = ["Uninstall-WindowsFeature Windows-Defender"]
   }
 
   provisioner "powershell" {
-    script = "remove-one-drive.ps1"
-  }
-
-  provisioner "powershell" {
-    only   = ["virtualbox-iso.windows-10-1809-amd64"]
+    only   = ["virtualbox-iso.windows-2022-amd64"]
     script = "virtualbox-prevent-vboxsrv-resolution-delay.ps1"
   }
 
   provisioner "powershell" {
-    only   = ["qemu.windows-10-1809-amd64"]
+    only   = ["qemu.windows-2022-amd64"]
     script = "provision-guest-tools-qemu-kvm.ps1"
   }
 
   provisioner "windows-restart" {
-  }
-
-  provisioner "powershell" {
-    only   = ["qemu.windows-10-1809-amd64"]
-    script = "libvirt-fix-cpu-driver.ps1"
   }
 
   provisioner "powershell" {

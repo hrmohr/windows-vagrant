@@ -1,7 +1,7 @@
 packer {
   required_plugins {
     windows-update = {
-      version = "0.12.0"
+      version = "0.14.0"
       source = "github.com/rgl/windows-update"
     }
   }
@@ -70,7 +70,7 @@ source "vsphere-iso" "windows-2019-amd64" {
   ]
   iso_paths = [
     "[${var.vsphere_datastore}] iso/windows-2019-17763.737.190906-2324.rs5_release_svc_refresh_SERVER_EVAL_x64FRE_en-us_1.iso",
-    "[${var.vsphere_datastore}] iso/VMware-tools-windows-11.2.5-17337674.iso",
+    "[${var.vsphere_datastore}] iso/VMware-tools-windows-11.3.0-18090558.iso",
   ]
   network_adapters {
     network      = var.vsphere_network
@@ -118,6 +118,10 @@ build {
   }
 
   provisioner "windows-update" {
+    filters = [
+      "exclude:$_.Title -like '*VMware*'",
+      "include:$true"
+    ]
   }
 
   provisioner "powershell" {
